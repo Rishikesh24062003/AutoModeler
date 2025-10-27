@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Role enum for user permissions
+enum Role {
+  ADMIN
+  MANAGER
+  VIEWER
+}
+
+// User model
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  role      Role      @default(VIEWER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  createdModels   Model[]     @relation("ModelCreator")
+  createdRecords  Record[]    @relation("RecordCreator")
+}
+
+// Model Definition - Stores the structure of dynamic models
+model Model {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique // e.g., "Product", "Employee"
+  displayName String    // User-friendly name
+  description String?   // Optional description
+  tableName   String    @unique // Database table name (lowercase plural)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdById Int
+  createdBy   User      @relation("ModelCreator", fields: [createdById], references: [id])
+
+  // Relations
+  fields      Field[]
+  permissions ModelPermission[]
+  records     Record[]
+}
+
+// Field Definition - Defines fields for each model
+model Field {
+  id          Int      @id @default(autoincrement())
+  name        String   // e.g., "name", "price", "email"
+  displayName String   // User-friendly name
+  type        String   // "String", "Int", "Float", "Boolean", "DateTime", "Text"
+  isRequired  Boolean  @default(false)
+  isUnique    Boolean  @default(false)
+  defaultValue String? // JSON string for default value
+  validation  String?  // JSON string for validation rules
+  order       Int      @default(0) // Field display order
+  modelId     Int
+  model       Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([modelId, name]) // Unique field name per model
+}
+
+// Model Permissions - Role-based access control per model
+model ModelPermission {
+  id       Int     @id @default(autoincrement())
+  modelId  Int
+  model    Model   @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  role     Role
+  canCreate Boolean @default(false)
+  canRead   Boolean @default(false)
+  canUpdate Boolean @default(false)
+  canDelete Boolean @default(false)
+
+  @@unique([modelId, role]) // One permission set per role per model
+}
+
+// Record - Stores actual data for dynamic models
+model Record {
+  id          Int      @id @default(autoincrement())
+  modelId     Int
+  model       Model    @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  data        Json     // JSON object containing all field values
+  ownerId     Int
+  owner       User     @relation("RecordCreator", fields: [ownerId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([modelId])
+  @@index([ownerId])
+}

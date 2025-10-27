@@ -1,0 +1,4 @@
+# Model Definitions Directory
+
+This directory will contain JSON files for dynamically defined models.
+Each model definition will be stored as `<ModelName>.json`.
