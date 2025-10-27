@@ -18,6 +18,14 @@ Built with **React**, **TypeScript**, **Node.js**, **Express**, **PostgreSQL**, 
 
 ---
 
+## 🎬 Short Video
+
+[Screen Recording 2025-10-27 at 11.35.40 PM.mov](./Screen%20Recording%202025-10-27%20at%2011.35.40%20PM.mov)
+
+> **Watch a quick demo of the platform in action!** This video shows how to create models, publish them, and use the auto-generated CRUD APIs with role-based permissions.
+
+---
+
 ## 📋 Table of Contents
 
 - [Quick Start](#-quick-start)

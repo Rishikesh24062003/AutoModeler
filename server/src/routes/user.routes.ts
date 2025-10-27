@@ -5,19 +5,18 @@ import type { Role } from '@prisma/client';
 
 const router = Router();
 
-// Middleware to check if user is super admin
+// Middleware to check if user is super admin (ADMIN role)
 const requireSuperAdmin = (req: Request, res: Response, next: Function) => {
-  const user = (req as any).user;
+  const user = req.user;
   
   if (!user) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const superAdminEmail = process.env.SUPER_ADMIN_EMAIL || 'superadmin@platform.com';
-  
-  if (user.email !== superAdminEmail) {
+  // Allow any user with ADMIN role
+  if (user.role !== 'ADMIN') {
     return res.status(403).json({ 
-      error: 'Forbidden: Only super admin can access this resource' 
+      error: 'Forbidden: Only administrators can access this resource' 
     });
   }
 
